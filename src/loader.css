@@ -1,0 +1,62 @@
+.loader-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #111; /* optional */
+}
+
+.loader {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.loader,
+.loader:before,
+.loader:after {
+  animation-duration: 1.5s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.loader:before,
+.loader:after {
+  content: "";
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  background: #ff6ec7; /* wing color */
+  top: 0;
+  left: 0;
+  transform-origin: 50% 100%;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/* animations */
+.butterfly {
+  animation-name: fly1;
+}
+
+.butterfly:before {
+  animation-name: fly2;
+}
+
+.butterfly:after {
+  animation-name: fly3;
+}
+
+@keyframes fly1 {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(20px); }
+}
+
+@keyframes fly2 {
+  0%, 50%, 100% { transform: rotate(60deg); }
+  25%, 75% { transform: rotate(120deg); }
+}
+
+@keyframes fly3 {
+  0%, 50%, 100% { transform: rotate(300deg); }
+  25%, 75% { transform: rotate(240deg); }
+}
