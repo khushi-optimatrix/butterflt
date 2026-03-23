@@ -6,42 +6,72 @@ import axios from 'axios';
 function Useradmin() {
   const [success, setSuccess] = useState('');
   const [users, setUsers] = useState([]);
-  const [page, setPage] = useState("List"); // fixed typo
+  const [editUser, seteditUser] = useState(null);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  const fetchUsers = async () => {
+  const [page, setPage] =  useState({ page: "List", id: "" }); // fixed typo
+
+  const { register, handleSubmit, reset, formState: { errors },setValue  } = useForm();
+
+  const fetchUsers = async (id) => {
     try {
-      const res = await axios.get('http://localhost:5000/api/users');
-      setUsers(res.data);
+      const res = id?await axios.get(`http://localhost:5000/api/users/${id}`):await axios.get('http://localhost:5000/api/users');
+      id?seteditUser(res.data):setUsers(res.data);
     } catch (err) {
       console.error('Error fetching users:', err.response ? err.response.data : err.message);
     }
   };
 
   useEffect(() => {
+    if(page.id){
+      fetchUsers(page.id);
+    }else{
     fetchUsers();
-  }, []);
+
+    }
+  }, [page.id]);
+  useEffect(() => {
+    if(editUser){
+      setValue("name", editUser.name);
+      setValue("email", editUser.email);
+      setValue("role", editUser.role);
+      setValue("username", editUser.username);
+      setValue("password", editUser.password);
+    }
+  }, [editUser, setValue]);
+
 
   const onSubmit = async (data) => {
     try {
       const payload = { ...data, role: Number(data.role) };
+      data.id ? await axios.put(`http://localhost:5000/api/users/${data.id}`, payload) :
       await axios.post('http://localhost:5000/api/users', payload);
       setSuccess('Form submitted successfully!');
       reset();
       fetchUsers(); // refresh table
-      setPage('List'); // go back to list
+      setPage({ page: "List", id: "" }); // go back to list
     } catch (err) {
       console.error('Axios error:', err.response ? err.response.data : err.message);
       setSuccess('Error submitting form');
     }
   };
+  const userDelete = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this user?")) return;
+  try {
+    await axios.delete(`http://localhost:5000/api/users/${id}`);
+    setSuccess("User deleted successfully!");
+    fetchUsers(); // refresh table
+  } catch (err) {
+    console.error(err.response ? err.response.data : err.message);
+    setSuccess("Error deleting user");
+  }
+};
   return (
     <>
     <Header/>
     
     <div className='rightpage'>
-    {page === "List" && (
+    {page.page === "List" && (
   
     <div className='searchbox'>
       <label htmlFor='search'>Search By:</label>
@@ -56,11 +86,13 @@ function Useradmin() {
   
     )}
     <div className='pagesbox'>
-        <button onClick={()=>{setPage('List');}} className={page === "List" ? "active" : ""}>List</button>
-        <button onClick={()=>{setPage('Add');}} className={page === "Add" ? "active" : ""}>Add</button>
+        <button onClick={()=>{setPage({ page: "List", id: "" });}} className={page.page === "List" ? "active" : ""}>List</button>
+        {page.id=='' && <button onClick={()=>{setPage({ page: "Add", id: "" });}} className={page.page === "Add" ? "active" : ""}>Add</button>}
+        {page.id && <button onClick={()=>{setPage({ page: "Edit", id: page.id });}} className={page.page === "Edit" ? "active" : ""}>Edit</button>}
+
 
     </div>
-    {page === "List" && <div className='tablebox'>
+    {page.page === "List" && <div className='tablebox'>
   <table className="custom-table">
     <thead>
       <tr>
@@ -68,6 +100,7 @@ function Useradmin() {
         <th>Name</th>
         <th>Email</th>
         <th>Role</th>
+        <th>User Name</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -82,25 +115,30 @@ function Useradmin() {
                 {user.role === 1 ? 'Admin' : 'User'}
                 </span>
             </td>
+            <td>{user.username}</td>
+
             <td>
-                <button className="edit-btn">Edit</button>
-                <button className="delete-btn">Delete</button>
+                <button className="edit-btn" onClick={()=>{setPage({ page: "Edit", id: user._id });}}>Edit</button>
+                <button className="delete-btn" onClick={()=>userDelete(user._id)}>Delete</button>
             </td>
             </tr>
         ))}
     </tbody>
   </table>
 </div>}
-    {page === "Add" && <div className='addeditbox'>
+    {(page.page === "Add" || page.page === "Edit")  && <div className='addeditbox'>
+      
     <div className='form-top'>
-        <h2 className="form-title">Add User</h2>
+        <h2 className="form-title">{page.page} User</h2>
         <button onClick={()=>reset()} className="reset-btn">Reset</button>
     </div>
-  
+  {success && <p id="success-message">{success}</p>}
   <form className="custom-form" onSubmit={handleSubmit(onSubmit)}>
+    <input type="hidden"  name='id' {...register("id")} value={page.id}  />
+
     <div className="form-group">
       <label>Name</label>
-      <input type="text" placeholder="Enter name" {...register("name", { required: "Name is required" })} />
+      <input type="text" placeholder="Enter name" {...register("name", { required: "Name is required" })}  />
       {errors.name && <p>{errors.name.message}</p>}
     </div>
 
@@ -112,7 +150,7 @@ function Useradmin() {
         pattern: {
         value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
         message: "Enter a valid email",
-        }, })} />
+        }, })}   />
       {errors.email && <p>{errors.email.message}</p>}
     </div>
 
@@ -126,12 +164,24 @@ function Useradmin() {
         {errors.role && <p>{errors.role.message}</p>}
     </div>
 
+    <div className="form-group">
+      <label>User Name</label>
+      <input type="text" placeholder="Enter user name" {...register("username", { required: "User Name is required" })} />
+      {errors.username && <p>{errors.username.message}</p>}
+    </div>
+
+    <div className="form-group">
+      <label>Password</label>
+      <input type="password" placeholder="Enter password" {...register("password", { required: "Password is required" })} />
+      {errors.password && <p>{errors.password.message}</p>}
+    </div>
+
     <div className="form-actions">
       <button type="submit" className="save-btn">Save</button>
-      <button type="button" className="cancel-btn" onClick={()=>{setPage('List');}}>Cancel</button>
+      <button type="button" className="cancel-btn" onClick={()=>{setPage({ page: "List", id: "" });}}>Cancel</button>
     </div>
   </form>
-  {success && <p>{success}</p>}
+  
 </div>}     
     
     </div>

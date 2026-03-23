@@ -6,6 +6,7 @@ import { Route,Routes ,useLocation} from 'react-router-dom'
 import About from './pages/About.jsx'
 import Home from './pages/Home.jsx'
 import Useradmin from './admin/Useradmin.jsx' 
+import Dashboard from './admin/Dashboard.jsx'
 import './App.css'
 
 function App() {
@@ -35,6 +36,8 @@ const show_nav = !location.pathname.startsWith("/admin");
         {/* for admin */}
         <Route path="/admin" element={<Login/>} />
         <Route path="/admin/users" element={<Useradmin/>} />
+        <Route path="/admin/home" element={<Dashboard/>} />
+
 
 
 

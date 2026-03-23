@@ -5,7 +5,10 @@
 
     
 }
-
+.sidemenu a{
+    color: black;
+    text-decoration: none;
+}
 .loginbox{
     position: absolute;
     background-color: white;
@@ -27,7 +30,7 @@
 .filed_group{
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 5px;
     margin-bottom: 30px;
     
 }
@@ -90,6 +93,9 @@ body{
 
 }
 .topbar{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
     padding: 20px;
     margin-bottom: 20px;
     box-shadow: 0 0 10px rgba(112, 112, 112, 0.1);
@@ -360,7 +366,11 @@ body{
 .cancel-btn:hover {
   background: #ddd;
 }
-
+.filed_group p{
+  text-align: left;
+  color: red;
+  font-size: 14px;
+}
 .form-group p{
     color: red;
     font-size: 14px;
@@ -380,4 +390,23 @@ body{
   padding: 10px 14px;
   border-radius: 6px;
   cursor: pointer;
+}
+.success-message{
+    color: green;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.logout-btn{
+    padding: 10px;
+    background-color: #db4646;
+    border: none;
+    color: white;
+    cursor: pointer;
+    text-align: center;
+}
+.topbar-user{
+    display: flex;
+    gap: 20px;
+    align-items: center;
 }
